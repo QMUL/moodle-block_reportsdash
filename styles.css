@@ -1,0 +1,229 @@
+/* Reports Dashboard */
+
+/* RD Block  */
+
+.block_reportsdash ul{
+    margin:0;
+}
+.block_reportsdash li{
+    list-style-type: none;
+    margin:0;
+   text-indent: 1.6em;
+    padding:.3em;
+}
+.block_reportsdash li:nth-child(1) {
+    background: url('[[pix:i/report]]') no-repeat left;
+}
+.block_reportsdash li:nth-child(2){
+    background: url('[[pix:i/settings]]') no-repeat left;
+}
+/* Reports Dashboard Menu */
+
+[class*="entypo-"]:before {
+    content: "<";
+    font-size: 3.5em;
+    font-weight: 1200;
+}
+.accordion {
+    margin: 0 ;
+    width: 95%;
+}
+.accordion_wrapper {
+    list-style: none;
+    margin:0;
+    padding:0;
+}
+/* Dashboard Category headings */
+
+.accordion_wrapper h2{
+    padding:.5em 0 0 100px;
+    margin:0;
+    font-weight: normal;
+}
+.accordion_item {
+     border: 1px solid #e3e3e3;
+    border-radius:4px;
+     margin-bottom: 1em;
+     float: left;
+     position: relative;
+     width: 100%;
+ }
+.accordion_item span {
+    margin-top: 1rem;
+    position: absolute;
+    right: 1rem;
+    top: 0;
+    -webkit-transition: all 0.2s ease-in;
+    transition: all 0.2s ease-in;
+}
+.accordion_item.category-headline-coursecontent{
+    background: #F5F5F5 url('[[pix:block_reportsdash|course-content]]') no-repeat 2% .8em;
+}
+.accordion_item.category-headline-coursesetup{
+    background: #F5F5F5 url('[[pix:block_reportsdash|course-setup]]') no-repeat 2% .8em;
+}
+.accordion_item.category-headline-courseuse{
+    background: #F5F5F5 url('[[pix:block_reportsdash|course-use]]') no-repeat 2% .8em;
+}
+.accordion_item.category-headline-ilp{
+    background: #F5F5F5 url('[[pix:block_reportsdash|ilp]]') no-repeat 2% .8em;
+}
+.accordion_item.category-headline-sitestatistics{
+    background: #F5F5F5 url('[[pix:block_reportsdash|site-stats]]') no-repeat 2% .8em;
+}
+.accordion_item.category-headline-userspecific{
+    background: #F5F5F5 url('[[pix:block_reportsdash|user]]') no-repeat 2% .8em;
+}
+p.c-abstract {
+    padding: 0 0 0 100px;
+}
+.accordion_item input[type=checkbox] {
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 80px;
+    z-index: 1;
+    opacity: 0;
+    margin-right:0;
+    margin-top:0;
+}
+.accordion_item input[type=checkbox]:checked ~ div.panel {
+    float: left;
+    margin: 0;
+    max-height: 0;
+    opacity: 0;
+    -webkit-transform: translate(0, 50%);
+    transform: translate(0, 50%);
+}
+.accordion_item input[type=checkbox]:checked ~ span {
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+/* Dashboard Reports */
+.panel{
+    padding: 0 0 0 100px;
+}
+.panel ul {
+    list-style: none;
+    margin:0;
+    padding:10px 0;
+}
+.panel h3 {
+    color: #333;
+    background: url('[[pix:block_reportsdash|stats]]') no-repeat top center;
+    padding-top:35px;
+    font-size: 1.2em;
+    line-height: 1.2em;
+}
+.panel p {
+    color: #333;
+}
+.panel ul li {
+    padding: .1em;
+    margin: 0;
+    background: #d4d8d9;
+}
+.panel ul a{
+    display:block;
+    text-decoration:none;
+}
+ul.horizontal-list li {
+    display: inline;
+    float:left;
+    width: 30%;
+    margin:0 .5em .5em 0;
+    text-align: center;
+    border-radius: 4px;
+    min-height:150px;
+    border: 1px solid #ccc;
+}
+/* Control Panel */
+
+#dash-controls-container ul {
+    margin:0;
+}
+#dash-controls-container li {
+    display: inline-block;
+    margin: 0 20px 20px 0;
+    padding: 0px 0px 0px 0px;
+    list-style: none;
+}
+#dash-controls-container li a {
+    color: #333;
+    font-weight:700;
+    padding: 15px 25px 15px 35px;
+    border: medium none;
+    background:  #f5f5f5 url([[pix:i/settings]]) no-repeat .8em center  !important ;
+    box-shadow: 0px 1px 0px #ccc inset, 0px 5px 0px 0px #ccc;
+}
+#dash-controls-container li a:hover {
+    text-decoration:none;
+    background: #eeeeee url([[pix:i/settings]]) no-repeat .8em center  !important;
+    box-shadow: 0px 1px 0px #ccc inset, 0px 5px 0px 0px #ccc;
+}
+.reportdash_control_link{
+    display: inline-block;
+    margin-bottom: 0px;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    padding: 6px 12px;
+    line-height: 1.42857;
+    border-radius: 4px;
+    -moz-user-select: none;
+}
+/* Table Data */
+
+#page-blocks-reportsdash-report table.flexible{
+    border: 1px solid #e3e3e3;
+}
+#page-blocks-reportsdash-report table.flexible th{
+    background: #ddd;
+}
+#page-blocks-reportsdash-report .pagelayout-report .no-overflow{
+    overflow-x: scroll !important;
+}
+#page-blocks-reportsdash-report .paging{
+    padding: 10px;
+}
+#page-blocks-reportsdash-report .mdl-align{
+    text-align: right;
+    background: #333;
+    padding: 10px 10px 0 0 !important;
+    color: #fff;
+    border-radius: 4px;
+}
+#dash-container li {
+    float: left;
+    height: 93px;
+    margin: 0 20px 20px 0;
+    padding: 20px;
+    width: 150px;
+    list-style: none;
+    background-color:#ACDAF9;
+}
+.graph {
+    max-width: 100%;
+}
+
+#id_assessmentfilter .notinuse, #id_enrolfilter .notinuse{
+    color:#C0C0C0;
+}
+/* Reports Filters */
+
+#rptdashfilter{
+    padding: 10px;
+    margin: 10px 0px 20px;
+    background: rgb(245, 245, 245) none repeat scroll 0% 0%;
+    border: 1px solid #e3e3e3;
+    border-radius:4px;
+}
+#rptdashfilter #fgroup_id_buttonar{
+    padding:0;
+    margin:0;
+    border-top:0;
+}

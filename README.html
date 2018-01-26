@@ -1,0 +1,1315 @@
+<html>
+<head>
+<style>
+pre
+{
+    color: green;
+    font-size:75%;
+}
+
+code
+{
+    color: darkgreen;
+}
+
+h1,h2,h3,h4,h5,h6
+{
+    font-family: sans-serif;
+    page-break-after:avoid;
+}
+
+em
+{
+    color: red;
+    font-weight:bold;
+}
+
+h5, h6
+{
+    font-style: italic;
+}
+
+h1:first-letter
+{
+    font-family: fantasy;
+    font-size:36pt;
+    line-height:.5in;
+    float:left;
+    border:3px double white;
+    background:black;
+    color:white;
+}
+
+h2
+{
+    padding-left: 2px;
+}
+
+h3
+{
+    padding-left: 4px;
+}
+
+h4
+{
+    padding-left: 6px;
+}
+
+h5
+{
+    padding-left: 8px;
+}
+
+h6
+{
+    padding-left: 10px;
+}
+
+p
+{
+    padding-left:1em;
+}
+
+.important
+{
+    color:red;
+}
+</style>
+
+<!--TOC script from http://blog.magnetiq.com/post/497600148/automatic-table-of-contents-generation -->
+<script>
+window.onload = function () {
+	var toc = "";
+	var level = 0;
+
+	document.getElementById("contents").innerHTML =
+		document.getElementById("contents").innerHTML.replace(
+			/<h([\d])>([^<]+)<\/h([\d])>/gi,
+			function (str, openLevel, titleText, closeLevel) {
+				if (openLevel != closeLevel) {
+					return str;
+				}
+
+				if (openLevel > level) {
+					toc += (new Array(openLevel - level + 1))
+                        .join("<ul>");
+				} else if (openLevel < level) {
+					toc += (new Array(level - openLevel + 1))
+                        .join("</ul>");
+				}
+
+				level = parseInt(openLevel);
+
+				var anchor = titleText.replace(/ /g, "_");
+				toc += "<li><a href=\"#" + anchor + "\">"
+                    + titleText + "</a></li>";
+
+				return "<h" + openLevel + "><a name=\"" + anchor
+                    + "\">" + titleText + "</a></h" + closeLevel
+                    + ">";
+			}
+		);
+
+	if (level) {
+		toc += (new Array(level + 1)).join("</ul>");
+	}
+
+	document.getElementById("toc").innerHTML += toc;
+};
+</script>
+</head>
+<body>
+<h1>Contents</h1>
+<div id='toc'></div>
+<div id='contents'>
+<h1>Reports Dashboard</h1>
+<h2>Objective</h2>
+<p>The aim of the reports dashboard is to provide a framework within which
+  bespoke reports can be quickly constructed and presented within a
+  standard "dashboard" which is in turn accessed via a block.
+
+<p>In addition to the main dashboard of reports, this block also
+  allows access (given the correct capability) to a control panel
+  which contains various setting which are used by one or more of the
+  reports.
+
+<p>There is a final configuration field which is accessed via the
+  normal plugin configuration menu in Moodle which controls the
+  availability of a "heavy duty" database server (q.v.).
+
+<h3>System Requirements</h3>
+<p>Currently the reports dashboard is known to work on Moodle versions
+  2.0 to 2.4, inclusive. It <em>requires</em> the underlying database to
+  be MySQL version 5.1 or later and the PHP version to be 5.3.0 or
+  later. No javascript is used by the block itself so browser choice
+  should be fairly free, although obviously Internet Explorer should
+  be avoided.
+
+<h3>Modularity</h3>
+<p>The reports dashboard itself is separate from the reports, so that
+  reports can be added, removed, or updated independently from the
+  reports dashboard block itself. In order to facilitate this, those
+  reports which install their own database tables have their own
+  version, exported as a public function from the subclass which
+  defines the report.
+
+<p>Similarly, many of the reports support the exporting of their data
+  via the Moodle webservices API and the inputs and outputs from these
+  services can be modified without updating the reports dashboard
+  block itself.
+
+<h2>The Heavy-Duty Database</h2>
+<p>Each report in the dashboard may be classified (in code) as
+  "heavy". Associated with this classification is the plugin-level
+  setting "block_reportsdash | heavyhost" (Settings >> Plugins >>
+  Blocks >> Reports Dashboard).
+
+<p>If this setting is left blank then the reports dashboard will not
+  display any "heavy" reports. Alternatively, a database host may be
+  specified and heavy reports will use that host for their SQL
+  queries. The heavy-duty database may, in fact, be the same database
+  that the Moodle site is generally running off, but this is likely to
+  have an impact on site performance.
+<h3>Access</h3>
+<p>The heavy-duty database should be accessed using exactly the same
+  settings (other than dbhost) that are defined in the config.php file
+  for the main database.
+<p>However, there is an option to
+  define <code>$CFG->heavydbname=xxxx</code> in the config.php file
+  for unusual setups. It was decided not to expose this option via the
+  front-end in order to minimise the chances of user-misconfiguration.
+
+<h2>Control Panel Features</h2>
+<p>The dashboard's control panel provides the following global
+  facilities to the underlying reports:
+<ul>
+  <li><B>Academic Time Periods</B>. Rather than filtering reports
+  using the standard calendar widget which allows any specific day of
+  the year to be selected, it is possible to select time periods by more
+  academic units; i.e., "term" and "academic year".
+<p>This facility must be set up by an administrator who defines
+  start and end dates of a year, and then may optionally
+  define a set of terms within those two dates, giving terms "natural"
+  names such as "Autumn", "Easter", "Michaelmas" and so forth as desired.
+ </li>
+  <li><b>Access Control</b>. Since the individual reports can be
+  added or removed without changing the underlying report dashboard
+  block, access control can not be granularly granted using the
+  normal capability system in Moodle. The control panel is used to
+  assign viewing permissions based on system-level role assignment.</li>
+  <li><b>Course Leaders </b>. The control panel allows a single role
+  to be selected which represents a course leadership position which
+  may appear in various reports dealing with course-level information.
+<p>The role selected may have any displayed name, but it must apply at
+  the course level. It is not "inherited" from further up the chain,
+  e.g., if assigned in a course category, it is not automatically
+  detected by reports looking at courses within that category (this
+  was tried but performance was so poor as to make the reports useless).
+</li>
+  <li><b>Staff Assignment</b>. Roles may be defined as being
+  staff-roles, with the remainder being implicitly "non-staff" or
+  "students" in the most general sense. These roles may be checked in
+  any context, so that the non-staff users on a course may include
+  users who in other contexts are included in counts of staff
+  members.</li>
+</ul>
+
+<h1>Architecture</h1>
+<p>The Block has several components which are used heavily and a few
+  which are not. As a general point, almost every action in the block
+  should first check that <core>locallib.php</core> is installed as
+  this sets up an autoloader for the classes, so that development can
+  proceed without continually having to <code>require_once</code>
+  every class file that may, or may not be needed. Currently, locallib
+  also defines a couple of utility classes and a mini-logger used for
+  debugging webservices.
+
+<p>Reports are subclasses of <code>block_reportsdash_report</code>,
+  which in turn is a subclass of the core
+  class <code>external_api</code> from which it inherits the
+  webservices methods. I'll go into more detail on this class later
+  but the basics are that the constructor creates the flexible table
+  within which the report will be displayed, then <code>setSQL()</code> is called to
+  define the query, <code>getData</code> obtains the result and then either <code>show()</code>
+  or <code>export()</code> is called to display the results. Various
+  hooks are provided to allow extra information to be inserted, such
+  as links to user profiles etc.
+
+<p>The simplest report subclass, therefore, requires just the definition of
+  the <code>setSQL()</code> method, and overriding of the constructor
+  to define the column names. Generally, however, one will also want
+  to define a filter form and some defaults, and possibly some styling
+  to make the columns line up nicely.
+
+<P>Each report has its own language file, although this is only to
+  allow addition and removal of code and, unfortunately, the strings
+  all go into the same 'block_reportsdash' namespace.
+
+<p>Filter forms are defined for inclusion on the report pages, and
+  theoretically can be shared by different reports although this has
+  had limited utility.
+
+<H2>File Tree</h2>
+<P>The main files and folders of interest  are:<ul class='filetree'><li>block_reportsdash.php
+<p>The main block class file,
+    defining block_reportsdash (notice that it is always
+    report<em>s</em>dash). In addition to defining the usual block methods for the block
+  instance, it defines a range of static methods which provide either
+  global information or general utilities.</li>
+<li>controls/
+<p>Folder holding the files which generate the control panel
+  components. Sadly not currently object oriented yet, these files are
+  simply Moodle pages.</li>
+<li>forms/
+<p>Folder holding the form class definitions.
+<li>index.php
+<p>The code which generates the report dashboard itself.
+<li>lang/
+<p>The language files for the reports. There is a language file for
+  the overall block, and an additional one for each report so that
+  they can be added and removed without updating the whole block.
+<li>locallib.php
+<p>Sets up the autoloader and defines
+  the <code>String_Container</code>
+  and <code>Reportdash_field_info</code> classes.
+<li>report_filter.php
+<p>Redundant code to be removed asap.
+<li>report_settings.php
+<p>Displays the control panel. Just makes a bunch of links to the
+  files in <code>controls/</code>. Bit brain-dead, really.
+<li>reports/
+<p>Folder for the report-defining class code.
+<li>settings.php
+<p>Defines the heavy-duty database setting for the block.
+<li>settings_form.php
+<p>Defines the forms used by the control panel.
+<li>styles.css
+<p>Styling information for the block.
+<li>version.php
+<p>The standard Moodle block version information.
+</ul>
+
+<h2>Dashboard Display</h2>
+<p>The dashboard is constructed by the
+  top-level <code>index.php</code> which generates the page,
+  optionally shows a link to the control panel for those who have
+  permission to view it, and then statically calls
+  the <code>get_dashboard()</code> on
+  the <em><code>block_reportsdash</code></em> block.
+
+<p>This method simply scans the <code>reports/</code> folder looking
+  for files ending in "_report.class.php" and interrogates whatever
+  classes it finds for their display name, whether they are
+  user-visible at all (for example, sub-reports do not appear to the
+  user as selectable options in their own right), and whether the
+  current user is allowed to view them. It returns a string holding
+  the HTML to be displayed by the dashboard which index.php displays
+  and then completes the page with a footer.
+
+<h2>Report Lifecycle</h2>
+<h3>Top-Level</h3>
+<p>Report selection is done by <code>report.php</code> which takes a
+parameter <code>rptname</code> which defines the required report. The
+report class name is constructed by prefixing "block_reportsdash_" to
+this parameter, so the activity_types report depends on the existence
+of the <code>block_reportsdash_activity_types</code> class, which
+  should then be fetched by the autoloader when report.php
+  instantiates the class.
+
+<p>Once instantiated, the state of the <code>$export</code> parameter
+  is checked and either the data is exported by passing this to
+  the <code>export($export)</code> method, or a Moodle page header is
+  generated followed by a call to the <code>show()</code> method, and
+  finally the page footer ends the response.
+
+<h3>show()</h3>
+<p>Looking at the <code>show()</code> method in more detail we find
+  that it follows a very simple life cycle of its own: find the
+  filters which are in use, prepare a Moodle table, get the data for
+  the table, output only the visible page of that data, log the users
+  action, and end.
+
+<p>So far, none of the reports override this method and many do not
+  override <code>getData()</code> either but this latter has some
+  important features that the developer needs to be aware of if they
+  do need to modify it.
+
+<h4>getData()</h4>
+<p>Here's the standard version of <code>getData()</code> with the
+  comments removed:
+
+<pre>
+   protected function getData($usesort=true)
+   {
+      static::checkInstall();
+
+      $this->setSql($usesort);
+
+      $this->data=$this->mydb->get_recordset_sql($this->sql,$this->params);
+
+      $jim=(array)$this->data;
+      $this->records=array_shift($jim)->num_rows;
+
+      return $this->data;
+   }
+</pre>
+<p>The first thing to notice is that the method takes a flag which
+is passed onto <code>setSql()</code>. Normally this is set to true,
+but for webservices, where sorting is the responsibility of the
+client, we can save some (potentially a lot of) processing time by
+skipping any server-side sorting.
+
+<p>The first line of actual code is a call to the class
+  method <code>checkInstall()</code>. This makes sure that any tables
+  needed by the report have been set up and are up to date. It is very
+  important that any overridden version of this method do the
+  same. Technically, if you know that your report and any subclasses
+  someone might write off your report will never need any custom
+  tables then you could skip this. Good luck with that.
+
+<p>Next, we call <code>setSql()</code> which, in theory, constructs
+  and stores the SQL statement and parameters that will be used later
+  on. The separation of these two functions was design decision in the
+  early stages which hasn't really paid off in terms of any great
+  advantage. When a report has a really tricky bit of processing,
+  generally both functions have to be overridden and
+  really, <code>getData()</code> would have been enough on its
+  own. There may, however, be some application for being able to
+  isolate the SQL from the data that we've not found yet.
+
+<p>The data is obtained by passing the SQL statement and parameters to
+  the report's database object (<code>$this->mydb</code>). This is set
+  up in the constructor and is either a synonym for $DB or a
+  connection to the heavy-duty database.
+
+<p><I>The data is returned as a dataset in an effort to minimise memory
+  usage. Unfortunately, the recordset object does not provide a value
+  for the number of records found, so the two lines about <code>$jim</code> are a
+  convoluted way of extracting that data from the mysql_resultset
+  object. This may cause problems in the future</i>.
+
+<p>In particular, there is a chance that the Moodle team will change
+  the returned object so that it no longer contains the needed
+  information even as a private field. It may also cause problems if
+  the block is ported to a different underlying database (i.e., not
+  MySQL) which does not provide the information.
+
+<p>The alternative, of course, is to run the query twice with
+  "count(*)" in the second run. This is the "solution" given by Tim
+  Hunt, which tells you more about Tim Hunt than about getting decent
+  performance from your system. In short, this approach will make
+  several of the light reports into heavy ones and at least one report
+  (the departmental assignment report) effectively useless in a
+  real-time context.
+
+<p>Anyway, something to bear in mind.
+
+<p>The number of records is saved so that the paging can be set up and
+  the data object is returned.
+
+<p>There is some argument that returning the data object is redundant
+  as we also save it into the instance variables of the report. Be
+  that as it may, if you override <code>getData()</code> then make
+  sure it returns the data rather than just setting the variable. This
+  is something that should be streamlined in a future release (i.e.,
+  is never going to happen).
+
+<h4>Hooks</h4>
+<h5>Headers and Footers</h5>
+<p><code>show()</code> and <code>export($export)</code> both
+  call <code>reportHeader($export=false)</code> before they output
+  their data, and <code>reportFooter($export=false)</code> after the
+  final line. In the case of <code>show()</code>, this specifically
+  happens before and after the table is displayed.
+
+<p><code>getData()</code> is called
+  before <code>reportHeader()</code>, so the data is available for use
+  if needed.
+
+<h5>Preprocessing Rows</h5>
+<p><code>show()</code>, <code>webservice()</code>,
+  and <code>export($export)</code> loop through the data and for each
+  "row" of data call
+  either <code>preprocessShow($rowdata)</code>, <code>preprocessWebservice($rowdata)</code>,
+  or <code>preprocessExport($rowdata)</code> as appropriate. In each
+  case, <code>$rowdata</code> is an OBJECT containing the fields
+  returned from the database query. Note that this does not have to be
+  restricted to just the columns to be displayed, and usually
+  isn't. For example, course ids may be returned but ignored when
+  exporting, or used to create links when displaying on a webpage.
+
+<p>Here's a typical <code>preprocessShow($rowdata)</code> from the
+  login report:
+
+<pre>
+   protected function preprocessShow($rowdata)
+   {
+      global $CFG;
+
+      $n=$rowdata->lasttime;
+
+      if($n)
+      {
+	 $rowdata->lasttime=userdate($n,static::timeformat());
+	 if($this->canviewdetail)
+	    block_reportsdash::wrap($rowdata->lasttime,"$CFG->wwwroot/blocks/reportsdash/report.php?uid=$rowdata->uid&rptname=useractivity_report");
+      }
+      else
+      {
+	 $rowdata->lasttime=get_string('never');
+      }
+
+      if(!$rowdata->deleted)
+      {
+	 block_reportsdash::wrap($rowdata->fullname,"$CFG->wwwroot/user/view.php?id=$rowdata->uid");
+	 block_reportsdash::wrap($rowdata->lastname,"$CFG->wwwroot/user/view.php?id=$rowdata->uid");
+      }
+
+
+      return $rowdata;
+   }
+</pre>
+
+<p>This function tests the last login time and if it is zero displays
+  the user-language word for "never", and otherwise converts the value
+  into a date using the current language setting (the timeformat can
+  be set at the static level for a report in order to use more or less
+  space on the screen).
+
+<p>This example also uses the <code>wrap</code> utility function from
+  the block's own class to wrap the login time to a sub-report, and
+  the user's name to their profile page.
+
+<h6>preprocessWebservice()</h6>
+<p><code>preprocessWebservice()</code> adds the option, which the
+  other two preprocessors do not have, to return <code>null</code> in
+  order to remove a row of data from the result. Currently this is
+  used to remove a "total" line from the assignment marking report.
+
+<h4>Beware tinkering with prepareHtml()</h4>
+<p><code>show()</code> calls <code>prepareHtml()</code> before
+  calling <code>setup()</code> on the table object. Doing it the other
+  way around breaks the table, so watch out for that if sub-classing.
+<h4>readFilters()</h4>
+<p>Most of the reports have a set of filters which can be applied to
+  them. These are stored, in a report-by-report basis, in the session
+  so that they remain the same if the user returns to them later.
+
+<p><code>readFilters()</code> gets a filter form
+  from <code>get_filter_form()</code>, displays it, and reads the data
+  when the form is submitted.
+
+<p><code>get_filter_form()</code> has a default form associated with
+  it, but most reports override this and the autoloader looks
+  in <code>forms/</code> for the form. It recognises classes which
+  start with "block_reportsdash_" and end with "_form" as form
+  classes, snips off the "block_reportsdash_" part and adds
+  "_form.class.php" to find the form.
+
+<h3>updateBaseUrl() and sub-reports</h3>
+<p>Generally, reports carry their filter settings around in the filter
+  form object, but several sub-reports do not have filters of their
+  own, inheriting their settings from the parent report. These then
+  need a way to keep those settings when the page is refreshed by
+  paging, sorting, etc. Currently, this is done by putting the needed
+  parameters into the report's base url, which is what this function
+  is for.
+
+<p><code>updateBaseUrl()</code> should be called in the report's constructor.
+
+<h4>clearfilters</h4>
+<p>The top-level constructor for the report class checks for the
+  optional parameter "<code>clearfilters</code>" and deletes the
+  report's filters from the session if it is set. This is needed for
+  some of the sub-reports that do have their own filters but which
+  should not remember them when opened from their parent report.
+
+<h3>Table objects</h3>
+<p>Each report contains an instance of the standard Moodle
+  flexible_table. The table is obviously very important for displaying
+  results, but it is also identified in the session by the name of the
+  report so that column sorting is remembered from visit to
+  visit.
+
+
+<h2>Web services</h2>
+<h3>Finding Services</h3>
+<p>Exposing webservices without having to update the block when a
+  report is added or removed required some old-fashioned hacking.
+
+<p>As normal, there is a services.php file in the db folder for the
+  block, but this does not simply assign values into arrays.  Using
+  the same technique as the dashboard does for constructing the list
+  of available reports, the file finds all the available reports and
+  looks for the static method <code>services()</code>. If this exists,
+  it is called and the result used to build the list of service
+  functions exported by the block.
+
+<p>There is a tricky bit of code at the start of services.php which
+  includes the upgrade lib and then
+  calls <code>external_update_descriptions($component)</code>. But, since calling
+  that function triggers a call out to the services.php file, this
+  circularity has to be caught and prevented. The code
+  uses <code>debug_backtrace()</code> to detect the fact that the call
+  originated in upgradelib.php and then skip the circular
+  include/call. We're open to better suggestions.
+
+<h4>Adding a New Report</h4>
+<p>It seems at the moment that when a new report is added Moodle only
+  discovers its webservices on the second try, so going to Settings >> Plugins >>
+  Web Services >> API Documentation and refreshing the page seems to
+  be enough. I think this might be fixable with a change to the
+  settings.php code.
+
+<h3>Defining Services</h3>
+<p>The services that a report class provides are returned by the
+  <code>static::services()</code> method in the report class. In all
+  current cases this returns a single item array where the key is the
+  function name for the service and the value is a text description of
+  what the function does.
+
+<p>At the Moodle level, what happens is that a function is defined
+  which is accessed through a static method on the report class called
+  "webservice" and the displayed name is set based on the returned
+  value.
+
+<p>This <code>webservice</code> method must be accompanied by
+  the methods <code>webservice_returns()</code>
+  and <code>webservice_parameters</code> but by default all three are
+  provided by the top level <code>block_reportsdash_report</code> and
+  there should be no need to define them for individual reports.
+
+<h4>fields()</h4>
+<p>The <code>services()</code> function should be accompanied by a
+  protected static function called <code>fields()</code> which defines
+  the inputs and outputs of the report. If the report does not provide
+  a webservice then this can be left off but if it does then it
+  overlaps in functionality with the normal constructor and the latter
+  should be modified.
+
+<p>The <code>fields()</code> function is called by all three
+  "webservice" functions and they expect an <em>object</em> containing
+  four arrays: inputs, exports, webservice, and outputs. each of these arrays
+  are of instances of the <code>Reportdash_field_info</code> class.
+
+<pre>Reportdash_field_info('name',PARAM_XXX,'Descriptive text', default, extended_validation, suppress_flag)</pre>
+
+<ul>
+  <li>inputs is a list of parameters which the webservice (not the HTML
+  report) expects.</li>
+<li>exports is a list of colums which are <em>only</em> shown in exported reports.</li>
+<li>outputs is a list of columns which are displayed or exported. By
+  default these fields will also appear on the webservice output.
+<li>webservices is a list of columns/fields which appear <i>only</i>
+  in the webservice's output.
+</ul>
+
+<p>An individual field can be left out of a webservice (only) by
+  setting its suppress_flag to true. Here's an
+  example <code>fields()</code> function:
+
+<pre>
+protected static function fields()
+{
+   $defaulttime=floor((time()-60*60*24*7)/86400)*86400;
+   return (object)array('outputs'=>array(new Reportdash_field_info('subject',PARAM_TEXT,"Course name"),
+                                         new Reportdash_field_info('startdate',PARAM_INT,"Time course is due to start"),
+                                         new Reportdash_field_info('atotal',PARAM_INT,"Number of activities set up on course"),
+                                         new Reportdash_field_info('rtotal',PARAM_INT,"Number of resources set up on course"),
+                                         new Reportdash_field_info('total',PARAM_INT,"Number of activities and resources set up on course")),
+                        'webservice'=>array(new Reportdash_field_info('cid',PARAM_TEXT,"Course id")),
+                        'inputs'=>array(new Reportdash_field_info('fromfilter',PARAM_INT,'Unix timestamp, show courses starting from this date',$defaulttime),
+                                        new Reportdash_field_info('tofilter',PARAM_INT,'Unix timestamp, show courses starting up until this date',time()),
+                                        new Reportdash_field_info('opencourses',PARAM_BOOL,'1=Include courses with no start date; 0= do not',0)));
+}
+</pre>
+
+<p>Those inputs which are not given a default value will be shown as
+being required on the Moodle API documentation page and not providing
+them will cause an error.
+
+<h4>Constructor Modifications for Webservices</h4>
+<p>Reports with webservices must call their parent constructor like
+  this:
+
+<pre>parent::__construct(static::column_names(),false);</pre>
+
+<P><code>static::column_names()</code> gets the column names by
+  reading the fields defined above, and false indicates that there are
+  no dynamic columns (for example, the columns showing the types of
+  activities in the activity report, which are determined at
+  run-time). Webservices do not support dynamic columns as far as I
+  know.
+
+<p>If there are no webservices and therefore no <code>fields()</code>
+  function to call, the constructor should look like this:
+
+<p><i>This should probably change so that all reports use the fields() function</i>
+
+<pre>parent::__construct(array('subject','resourcetypes','startdate'),???);</pre>
+
+<p>where ",???" can be true, false or simply omitted.
+
+<h4>Multiple Webservices From a Report</h4>
+<p>If you do want to expose more than one service from the same
+  report, then you will need to put more than one item in the array returned by
+  <code>services</code> and define a new set of static functions
+  called <code>webservice1()</code>, <code>webservice1_returns()</code>,
+  and <code>webservice1_parameters()</code>. If you want to add a
+  third service then
+  define <code>webservice2()</code>, <code>webservice2_returns()</code>,
+  and <code>webservice2_parameters()</code> and so forth.
+
+<p>Currently, this is untested.
+
+<h4>Field Names</h4>
+<p>The names listed for the fields should be the same as the field
+  names found in the return value from <code>getData()</code>, which
+  in turn will usually be the names of the fields selected by the SQL
+  statement.
+
+<p>In an ideal world there would be some sort of mapping to the
+  webservice field names so that we could be consistent. e.g.,
+  "courseid", "cid", and "course" are used in various webservices to
+  represent the course id because that's how the underlying SQL works;
+  it would be better if the client always saw "courseid".
+
+
+<h2>Cron Control</h2>
+<p>The block sets up a single cron task for every 5 minutes, at which
+  point it asks each available report whether it has a cron task (via
+  the <code>static::has_cron()</code> function. If
+  it does then the report's <code>cron()</code> function is called.
+
+<p>Because a report's cron job may take a long time, a semaphore
+  system is setup using <code>set_config()</code> and in addition the
+  child cron are called inside a <code>try...catch</code> block so
+  that the semaphore can be cleared if there is a fatal error.
+
+<p class='important'>It is not clear that the <code>try...catch</code> mechanism in PHP
+  is 100% reliable, and even if it is then the server could still be
+  restarted in the middle of a cron job, leaving the semaphore in the
+  "busy" state.
+
+  <h3>Task API</h3>
+<p>The block now uses the
+new <a href='https://docs.moodle.org/dev/Task_API' target=_new>task API</a> but
+currently only to trigger the old cron function. Ideally the report
+crons would become individual tasks which would no longer need the
+semaphore code used at the moment. I have not worked out how to do
+  this ina modular way, however.
+
+<h2>Graphing</h2>
+    <p>Report dashboard currently supports three graph types bar chart, pie chart and line chart.
+        All three graphs are implemented by calling its relevant class (all classes derived from the
+        block_reportsdash_graph parent class). The graphing functionality should be implemented in the following sequence:
+            <ul><li>getReportData()</li>
+    <li>addGraphPoints()</li>
+    <li>setGraphPosition</li>
+    <li>setLegend()</li>
+    <li>createGraph()</li>
+    <li>displayGraph()</li>
+            </ul>
+    With a little instruction all graphs can make use of the data used to create the main report table (reports that use recordsets will require additional calls to the getData function).
+
+    <h3>getReportData()</h3>
+    Provides the graph with information from the $this->data var. If the report is paginated also provide the start and stop bouindaries.
+
+    <h3>addGraphPoints()</h3>
+    Allows you to add points to the graph. In the case that you have already provided the data (via getReportData) then you are
+    providing instructions to the function telling it where the data can be retrieved from.
+
+    The following is example of the manner in which add points to a graph using the reports db data taking the data from fields called rtotal (labeld Resources) and atotal (Activities):
+
+    <pre>
+        $dbColumns    =   array('rtotal'=>'Resources','atotal'=>'Activities');
+
+        foreach($dbColumns    as $n => $v)   {
+        $this->getData();
+        $this->chart->getReportData($this->data,$dataStart,$dataEnd);
+        $this->chart->addGraphPoints(array($n),$v,"{$n}data",true);
+        }
+    </pre>
+
+    <li>setGraphPosition</li>
+    Allows you to set the width and height of the image the graph is in and the posititon of the graph WITHIN the image.
+
+    <li>setLegend()</li>
+    Displays a graph and optionally changes the orientation and position of the graph
+
+    <li>createGraph()</li>
+    All graph types should implement this function so that a graph is actually created out of the data that has been added.
+
+    <li>displayGraph()</li>
+    Generates the graph image and saves it to the cache so it can be displayed on screen. (This process involves calling another file in an image element).
+
+
+         </p>
+
+<h2>Moodle Database Tables</h2>
+<p>The base reportsdash block defines a few database tables for its
+  own use. These tables are always accessed through the normal $DB
+  object and not the $mydb object. Individual reports may create their
+  own tables and these may be accessed via the heavy database or not
+  as the case may be.
+
+<h3>block_reportsdash_perms</h3>
+<p>This lists the reports available and the role id's which are
+  permitted to view them.
+
+<h3>block_reportsdash_regcats</h3>
+<p>Not yet used. Will be part of the "higher level" organisational
+  units.
+
+<h3>block_reportsdash_region</h3>
+<p>As above.
+
+<h3>block_reportsdash_reports</h3>
+<p>Good grief, another unused table. This one is waiting for a control
+  panel which will allow the display order of the reports to be set,
+  as well as the ability to temporarily hide reports.
+
+<h3>block_reportsdash_staff</h3>
+<p>Now, this one we do use. It holds a list of the role id's which are
+  to be considered "staff".
+
+<h3>block_reportsdash_terms</h3>
+<p>Holds the academic terms - which year they belong to, their names,
+  and the start and end dates.
+
+<h3>block_reportsdash_years</h3>
+<p>The names and durations of academic years.
+
+<h3>Other Items Stored in DB</h3>
+<p>The block stores a semaphore for each child cron job in the
+  format <cron>block_reportsdash_cron_$reportname</cron>, as well a
+  setting for which role counts as a course leader
+  in <code>leaderroles</code>. Some reports may store other items.
+
+<h2>Utility Functions</h2>
+TO DO.
+
+
+<h1>Specific Reports</h1>
+TO DO
+
+<h1>Copyright and Licensing</h1>
+<p>This block is &copy;2013 University of London Computer Centre and
+  released under the General Public License Version 2.0.
+
+<a href='http://www.gnu.org/licenses/gpl-2.0.html'>http://www.gnu.org/licenses/gpl-2.0.html</a>
+</div>
+<h2>GNU General Public License, version 2</h2>
+<ul>
+  <li><a href="http://www.gnu.org/licenses/gpl.html">The latest version of the GPL, version 3</a></li>
+  <li><a href="http://www.gnu.org/licenses/gpl-violation.html">What to do if you see a possible
+    GPL violation</a></li>
+  <li><a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0-translations.html">Translations
+    of GPLv2</a></li>
+  <li><a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html">GPLv2 Frequently Asked
+    Questions</a></li>
+  <li>The GNU General Public License version 2 (GPLv2) in other formats: <a
+    href="gpl-2.0.txt">plain text</a>, <a href="gpl-2.0.texi">Texinfo</a>, <a
+    href="gpl-2.0.tex">LaTeX</a>, <a href="gpl-2.0-standalone.html">standalone
+    HTML</a>, <a href="gpl-2.0.dbk">Docbook</a> </li>
+</ul>
+
+<hr />
+
+<h3>Table of Contents</h3>
+<ul>
+  <li><a id="TOC1" href="#SEC1">GNU GENERAL PUBLIC LICENSE
+    <!--TRANSLATORS: Don't translate the license; copy msgid's verbatim!--></a> 
+    <ul>
+      <li><a id="TOC2" href="#SEC2">Preamble</a></li>
+      <li><a id="TOC3" href="#SEC3">TERMS AND CONDITIONS FOR COPYING,
+        DISTRIBUTION AND MODIFICATION</a></li>
+      <li><a id="TOC4" href="#SEC4">How to Apply These Terms to Your New
+        Programs</a></li>
+    </ul>
+  </li>
+</ul>
+
+<hr style="clear: both;" />
+<!-- The license text is in English and appears broken in RTL as
+Arabic, Farsi, etc. Explicitly set the direction to override the
+one defined in the translation. -->
+
+<h3><a id="SEC1">GNU GENERAL PUBLIC LICENSE</a></h3>
+<p>
+Version 2, June 1991
+</p>
+
+<pre>
+Copyright (C) 1989, 1991 Free Software Foundation, Inc.  
+51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+</pre>
+
+<h3><a id="preamble"></a><a id="SEC2">Preamble</a></h3>
+
+<p>
+  The licenses for most software are designed to take away your
+freedom to share and change it.  By contrast, the GNU General Public
+License is intended to guarantee your freedom to share and change free
+software--to make sure the software is free for all its users.  This
+General Public License applies to most of the Free Software
+Foundation's software and to any other program whose authors commit to
+using it.  (Some other Free Software Foundation software is covered by
+the GNU Lesser General Public License instead.)  You can apply it to
+your programs, too.
+</p>
+
+<p>
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+this service if you wish), that you receive source code or can get it
+if you want it, that you can change the software or use pieces of it
+in new free programs; and that you know you can do these things.
+</p>
+
+<p>
+  To protect your rights, we need to make restrictions that forbid
+anyone to deny you these rights or to ask you to surrender the rights.
+These restrictions translate to certain responsibilities for you if you
+distribute copies of the software, or if you modify it.
+</p>
+
+<p>
+  For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must give the recipients all the rights that
+you have.  You must make sure that they, too, receive or can get the
+source code.  And you must show them these terms so they know their
+rights.
+</p>
+
+<p>
+  We protect your rights with two steps: (1) copyright the software, and
+(2) offer you this license which gives you legal permission to copy,
+distribute and/or modify the software.
+</p>
+
+<p>
+  Also, for each author's protection and ours, we want to make certain
+that everyone understands that there is no warranty for this free
+software.  If the software is modified by someone else and passed on, we
+want its recipients to know that what they have is not the original, so
+that any problems introduced by others will not reflect on the original
+authors' reputations.
+</p>
+
+<p>
+  Finally, any free program is threatened constantly by software
+patents.  We wish to avoid the danger that redistributors of a free
+program will individually obtain patent licenses, in effect making the
+program proprietary.  To prevent this, we have made it clear that any
+patent must be licensed for everyone's free use or not licensed at all.
+</p>
+
+<p>
+  The precise terms and conditions for copying, distribution and
+modification follow.
+</p>
+
+
+<h3><a id="terms"></a><a id="SEC3">TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</a></h3>
+
+
+<a id="section0"></a><p>
+<strong>0.</strong>
+ This License applies to any program or other work which contains
+a notice placed by the copyright holder saying it may be distributed
+under the terms of this General Public License.  The "Program", below,
+refers to any such program or work, and a "work based on the Program"
+means either the Program or any derivative work under copyright law:
+that is to say, a work containing the Program or a portion of it,
+either verbatim or with modifications and/or translated into another
+language.  (Hereinafter, translation is included without limitation in
+the term "modification".)  Each licensee is addressed as "you".
+</p>
+
+<p>
+Activities other than copying, distribution and modification are not
+covered by this License; they are outside its scope.  The act of
+running the Program is not restricted, and the output from the Program
+is covered only if its contents constitute a work based on the
+Program (independent of having been made by running the Program).
+Whether that is true depends on what the Program does.
+</p>
+
+<a id="section1"></a><p>
+<strong>1.</strong>
+ You may copy and distribute verbatim copies of the Program's
+source code as you receive it, in any medium, provided that you
+conspicuously and appropriately publish on each copy an appropriate
+copyright notice and disclaimer of warranty; keep intact all the
+notices that refer to this License and to the absence of any warranty;
+and give any other recipients of the Program a copy of this License
+along with the Program.
+</p>
+
+<p>
+You may charge a fee for the physical act of transferring a copy, and
+you may at your option offer warranty protection in exchange for a fee.
+</p>
+
+<a id="section2"></a><p>
+<strong>2.</strong>
+ You may modify your copy or copies of the Program or any portion
+of it, thus forming a work based on the Program, and copy and
+distribute such modifications or work under the terms of Section 1
+above, provided that you also meet all of these conditions:
+</p>
+
+<dl>
+  <dt></dt>
+    <dd>
+      <strong>a)</strong>
+      You must cause the modified files to carry prominent notices
+      stating that you changed the files and the date of any change.
+    </dd>
+  <dt></dt>
+    <dd>
+      <strong>b)</strong>
+      You must cause any work that you distribute or publish, that in
+      whole or in part contains or is derived from the Program or any
+      part thereof, to be licensed as a whole at no charge to all third
+      parties under the terms of this License.
+    </dd>
+  <dt></dt>
+    <dd>
+      <strong>c)</strong>
+      If the modified program normally reads commands interactively
+      when run, you must cause it, when started running for such
+      interactive use in the most ordinary way, to print or display an
+      announcement including an appropriate copyright notice and a
+      notice that there is no warranty (or else, saying that you provide
+      a warranty) and that users may redistribute the program under
+      these conditions, and telling the user how to view a copy of this
+      License.  (Exception: if the Program itself is interactive but
+      does not normally print such an announcement, your work based on
+      the Program is not required to print an announcement.)
+    </dd>
+</dl>
+
+<p>
+These requirements apply to the modified work as a whole.  If
+identifiable sections of that work are not derived from the Program,
+and can be reasonably considered independent and separate works in
+themselves, then this License, and its terms, do not apply to those
+sections when you distribute them as separate works.  But when you
+distribute the same sections as part of a whole which is a work based
+on the Program, the distribution of the whole must be on the terms of
+this License, whose permissions for other licensees extend to the
+entire whole, and thus to each and every part regardless of who wrote it.
+</p>
+
+<p>
+Thus, it is not the intent of this section to claim rights or contest
+your rights to work written entirely by you; rather, the intent is to
+exercise the right to control the distribution of derivative or
+collective works based on the Program.
+</p>
+
+<p>
+In addition, mere aggregation of another work not based on the Program
+with the Program (or with a work based on the Program) on a volume of
+a storage or distribution medium does not bring the other work under
+the scope of this License.
+</p>
+
+<a id="section3"></a><p>
+<strong>3.</strong>
+ You may copy and distribute the Program (or a work based on it,
+under Section 2) in object code or executable form under the terms of
+Sections 1 and 2 above provided that you also do one of the following:
+</p>
+
+<!-- we use this doubled UL to get the sub-sections indented, -->
+<!-- while making the bullets as unobvious as possible. -->
+
+<dl>
+  <dt></dt>
+    <dd>
+      <strong>a)</strong>
+      Accompany it with the complete corresponding machine-readable
+      source code, which must be distributed under the terms of Sections
+      1 and 2 above on a medium customarily used for software interchange; or,
+    </dd>
+  <dt></dt>
+    <dd>
+      <strong>b)</strong>
+      Accompany it with a written offer, valid for at least three
+      years, to give any third party, for a charge no more than your
+      cost of physically performing source distribution, a complete
+      machine-readable copy of the corresponding source code, to be
+      distributed under the terms of Sections 1 and 2 above on a medium
+      customarily used for software interchange; or,
+    </dd>
+  <dt></dt>
+    <dd>
+      <strong>c)</strong>
+      Accompany it with the information you received as to the offer
+      to distribute corresponding source code.  (This alternative is
+      allowed only for noncommercial distribution and only if you
+      received the program in object code or executable form with such
+      an offer, in accord with Subsection b above.)
+    </dd>
+</dl>
+
+<p>
+The source code for a work means the preferred form of the work for
+making modifications to it.  For an executable work, complete source
+code means all the source code for all modules it contains, plus any
+associated interface definition files, plus the scripts used to
+control compilation and installation of the executable.  However, as a
+special exception, the source code distributed need not include
+anything that is normally distributed (in either source or binary
+form) with the major components (compiler, kernel, and so on) of the
+operating system on which the executable runs, unless that component
+itself accompanies the executable.
+</p>
+
+<p>
+If distribution of executable or object code is made by offering
+access to copy from a designated place, then offering equivalent
+access to copy the source code from the same place counts as
+distribution of the source code, even though third parties are not
+compelled to copy the source along with the object code.
+</p>
+
+<a id="section4"></a><p>
+<strong>4.</strong>
+ You may not copy, modify, sublicense, or distribute the Program
+except as expressly provided under this License.  Any attempt
+otherwise to copy, modify, sublicense or distribute the Program is
+void, and will automatically terminate your rights under this License.
+However, parties who have received copies, or rights, from you under
+this License will not have their licenses terminated so long as such
+parties remain in full compliance.
+</p>
+
+<a id="section5"></a><p>
+<strong>5.</strong>
+ You are not required to accept this License, since you have not
+signed it.  However, nothing else grants you permission to modify or
+distribute the Program or its derivative works.  These actions are
+prohibited by law if you do not accept this License.  Therefore, by
+modifying or distributing the Program (or any work based on the
+Program), you indicate your acceptance of this License to do so, and
+all its terms and conditions for copying, distributing or modifying
+the Program or works based on it.
+</p>
+
+<a id="section6"></a><p>
+<strong>6.</strong>
+ Each time you redistribute the Program (or any work based on the
+Program), the recipient automatically receives a license from the
+original licensor to copy, distribute or modify the Program subject to
+these terms and conditions.  You may not impose any further
+restrictions on the recipients' exercise of the rights granted herein.
+You are not responsible for enforcing compliance by third parties to
+this License.
+</p>
+
+<a id="section7"></a><p>
+<strong>7.</strong>
+ If, as a consequence of a court judgment or allegation of patent
+infringement or for any other reason (not limited to patent issues),
+conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License.  If you cannot
+distribute so as to satisfy simultaneously your obligations under this
+License and any other pertinent obligations, then as a consequence you
+may not distribute the Program at all.  For example, if a patent
+license would not permit royalty-free redistribution of the Program by
+all those who receive copies directly or indirectly through you, then
+the only way you could satisfy both it and this License would be to
+refrain entirely from distribution of the Program.
+</p>
+
+<p>
+If any portion of this section is held invalid or unenforceable under
+any particular circumstance, the balance of the section is intended to
+apply and the section as a whole is intended to apply in other
+circumstances.
+</p>
+
+<p>
+It is not the purpose of this section to induce you to infringe any
+patents or other property right claims or to contest validity of any
+such claims; this section has the sole purpose of protecting the
+integrity of the free software distribution system, which is
+implemented by public license practices.  Many people have made
+generous contributions to the wide range of software distributed
+through that system in reliance on consistent application of that
+system; it is up to the author/donor to decide if he or she is willing
+to distribute software through any other system and a licensee cannot
+impose that choice.
+</p>
+
+<p>
+This section is intended to make thoroughly clear what is believed to
+be a consequence of the rest of this License.
+</p>
+
+<a id="section8"></a><p>
+<strong>8.</strong>
+ If the distribution and/or use of the Program is restricted in
+certain countries either by patents or by copyrighted interfaces, the
+original copyright holder who places the Program under this License
+may add an explicit geographical distribution limitation excluding
+those countries, so that distribution is permitted only in or among
+countries not thus excluded.  In such case, this License incorporates
+the limitation as if written in the body of this License.
+</p>
+
+<a id="section9"></a><p>
+<strong>9.</strong>
+ The Free Software Foundation may publish revised and/or new versions
+of the General Public License from time to time.  Such new versions will
+be similar in spirit to the present version, but may differ in detail to
+address new problems or concerns.
+</p>
+
+<p>
+Each version is given a distinguishing version number.  If the Program
+specifies a version number of this License which applies to it and "any
+later version", you have the option of following the terms and conditions
+either of that version or of any later version published by the Free
+Software Foundation.  If the Program does not specify a version number of
+this License, you may choose any version ever published by the Free Software
+Foundation.
+</p>
+
+<a id="section10"></a><p>
+<strong>10.</strong>
+ If you wish to incorporate parts of the Program into other free
+programs whose distribution conditions are different, write to the author
+to ask for permission.  For software which is copyrighted by the Free
+Software Foundation, write to the Free Software Foundation; we sometimes
+make exceptions for this.  Our decision will be guided by the two goals
+of preserving the free status of all derivatives of our free software and
+of promoting the sharing and reuse of software generally.
+</p>
+
+<a id="section11"></a><p><strong>NO WARRANTY</strong></p>
+
+<p>
+<strong>11.</strong>
+ BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+REPAIR OR CORRECTION.
+</p>
+
+<a id="section12"></a><p>
+<strong>12.</strong>
+ IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
+OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
+TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
+YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
+PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+</p>
+
+<h3>END OF TERMS AND CONDITIONS</h3>
+
+<h3><a id="howto"></a><a id="SEC4">How to Apply These Terms to Your New Programs</a></h3>
+
+<p>
+  If you develop a new program, and you want it to be of the greatest
+possible use to the public, the best way to achieve this is to make it
+free software which everyone can redistribute and change under these terms.
+</p>
+
+<p>
+  To do so, attach the following notices to the program.  It is safest
+to attach them to the start of each source file to most effectively
+convey the exclusion of warranty; and each file should have at least
+the "copyright" line and a pointer to where the full notice is found.
+</p>
+
+<pre>
+<var>one line to give the program's name and an idea of what it does.</var>
+Copyright (C) <var>yyyy</var>  <var>name of author</var>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+</pre>
+
+<p>
+Also add information on how to contact you by electronic and paper mail.
+</p>
+
+<p>
+If the program is interactive, make it output a short notice like this
+when it starts in an interactive mode:
+</p>
+
+<pre>
+Gnomovision version 69, Copyright (C) <var>year</var> <var>name of author</var>
+Gnomovision comes with ABSOLUTELY NO WARRANTY; for details
+type `show w'.  This is free software, and you are welcome
+to redistribute it under certain conditions; type `show c' 
+for details.
+</pre>
+
+<p>
+The hypothetical commands <samp>`show w'</samp> and <samp>`show c'</samp> should show
+the appropriate parts of the General Public License.  Of course, the
+commands you use may be called something other than <samp>`show w'</samp> and
+<samp>`show c'</samp>; they could even be mouse-clicks or menu items--whatever
+suits your program.
+</p>
+
+<p>
+You should also get your employer (if you work as a programmer) or your
+school, if any, to sign a "copyright disclaimer" for the program, if
+necessary.  Here is a sample; alter the names:
+</p>
+
+
+<pre>
+Yoyodyne, Inc., hereby disclaims all copyright
+interest in the program `Gnomovision'
+(which makes passes at compilers) written 
+by James Hacker.
+
+<var>signature of Ty Coon</var>, 1 April 1989
+Ty Coon, President of Vice
+</pre>
+
+<p>
+This General Public License does not permit incorporating your program into
+proprietary programs.  If your program is a subroutine library, you may
+consider it more useful to permit linking proprietary applications with the
+library.  If this is what you want to do, use the 
+<a href="http://www.gnu.org/licenses/lgpl.html">GNU Lesser General Public License</a>
+instead of this License.
+</p>
+
+</div>
+</body></html>

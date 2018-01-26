@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/reportsdash/db" VERSION="20130530" COMMENT="XMLDB file for Reports Dashboard block"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_reportsdash_staff" COMMENT="Which roles count as staff." NEXT="block_reportsdash_perms">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="roleid"/>
+        <FIELD NAME="roleid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_reportsdash_perms" COMMENT="Who is allowed to view which reports" PREVIOUS="block_reportsdash_staff" NEXT="block_reportsdash_reports">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="roleid"/>
+        <FIELD NAME="roleid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="report"/>
+        <FIELD NAME="report" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="roleid" NEXT="canview"/>
+        <FIELD NAME="canview" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="report"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="pidx" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="roleid" UNIQUE="false" FIELDS="roleid, report"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_reportsdash_reports" COMMENT="List of reports. Not currently used." PREVIOUS="block_reportsdash_perms" NEXT="block_reportsdash_region">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="nevershow"/>
+        <FIELD NAME="nevershow" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="name" NEXT="visible"/>
+        <FIELD NAME="visible" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="nevershow" NEXT="sortorder"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="visible"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="nameidx" UNIQUE="true" FIELDS="name"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_reportsdash_region" COMMENT="block_reportsdash_region table retrofitted from MySQL" PREVIOUS="block_reportsdash_reports" NEXT="block_reportsdash_regcats">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="visible"/>
+        <FIELD NAME="visible" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="name"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="vis_idx" UNIQUE="false" FIELDS="visible"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_reportsdash_regcats" COMMENT="region ¦ categories linking table" PREVIOUS="block_reportsdash_region" NEXT="block_reportsdash_years">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="rid"/>
+        <FIELD NAME="rid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="cid"/>
+        <FIELD NAME="cid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="rid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id" TYPE="primary" FIELDS="id" NEXT="mapping"/>
+        <KEY NAME="mapping" TYPE="unique" FIELDS="rid, cid" PREVIOUS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="cid_idx" UNIQUE="false" FIELDS="cid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_reportsdash_years" COMMENT="block_reportsdash_years table retrofitted from MySQL" PREVIOUS="block_reportsdash_regcats" NEXT="block_reportsdash_terms">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="yearname"/>
+        <FIELD NAME="yearname" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="yearstart"/>
+        <FIELD NAME="yearstart" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="yearname" NEXT="yearend"/>
+        <FIELD NAME="yearend" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="yearstart"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="year" TYPE="unique" FIELDS="yearname" NEXT="yrs"/>
+        <KEY NAME="yrs" TYPE="unique" FIELDS="yearstart, yearend" PREVIOUS="year" NEXT="ididx"/>
+        <KEY NAME="ididx" TYPE="primary" FIELDS="id" PREVIOUS="yrs"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_reportsdash_terms" COMMENT="block_reportsdash_terms table retrofitted from MySQL" PREVIOUS="block_reportsdash_years">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="year"/>
+        <FIELD NAME="year" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="termname"/>
+        <FIELD NAME="termname" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="year" NEXT="termstart"/>
+        <FIELD NAME="termstart" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="termname" NEXT="termend"/>
+        <FIELD NAME="termend" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="termstart"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="dates" TYPE="unique" FIELDS="termstart, termend" NEXT="pidx"/>
+        <KEY NAME="pidx" TYPE="primary" FIELDS="id" PREVIOUS="dates"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="year" UNIQUE="false" FIELDS="year"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
